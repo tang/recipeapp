@@ -1,0 +1,96 @@
+{
+  "recipes": [
+    {
+      "name": "Scrambled Eggs",
+      "ingredients": [
+          {
+            "name": "Eggs",
+            "amount": "4"
+          },
+          {
+            "name": "Salt",
+            "amount": "1 teaspoon"
+          },
+          {
+            "name": "Pepper",
+            "amount": "1 teaspoon"
+          },
+          {
+            "name": "Olive oil",
+            "amount": "2 teaspoons"
+          }
+        ],
+      "items": [
+          "Bowl",
+          "Serving Plate",
+          "Stove",
+          "Whisk"
+        ],
+      "directions": [
+          {
+            "instruction": "Crack all of the eggs into a bowl",
+            "time-in-minutes": 1
+          },
+          {
+            "instruction": "Whisk eggs until the yolks are mixed together",
+            "time-in-minutes": 1
+          },
+          {
+            "instruction": "Turn on stove to medium-high",
+            "time-in-minutes": 5
+          },
+          {
+            "instruction": "Pour eggs into pan and stir",
+            "time-in-minutes": 4
+          },
+          {
+            "instruction": "Place eggs onto serving plate"
+          }
+        ]
+    },
+    {
+      "name": "Spaghetti",
+      "ingredients": [
+        {
+          "name": "Spaghetti",
+          "amount": "1/2 pound"
+        },
+        {
+          "name": "Spaghetti Sauce",
+          "amount": "16 ounces"
+        },
+        {
+          "name": "Salt",
+          "amount": "1 tablespoon"
+        },
+        {
+          "name": "Pepper",
+          "amount": "1 tablespoon"
+        }
+      ],
+      "items": [
+        "Pot",
+        "Colander",
+        "Pan",
+        "Plate"
+      ],
+      "directions": [
+        {
+          "instruction": "Boil the spaghetti",
+          "time-in-minutes": 10
+        },
+        {
+          "instruction": "Heat up the spaghetti sauce",
+          "time-in-minutes": 10
+        },
+        {
+          "instruction": "Add salt and pepper to the spaghetti sauce",
+          "time-in-minutes": 1
+        },
+        {
+          "instruction": "Place the spaghetti on the plate and place the spaghetti sauce on top of the spaghetti"
+        }
+      ]
+    }
+  ]
+}

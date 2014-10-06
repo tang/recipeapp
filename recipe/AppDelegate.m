@@ -7,18 +7,74 @@
 //
 
 #import "AppDelegate.h"
+#import "TraitOverrideViewController.h"
+#import "RecipeTableViewController.h"
+#import "TheRecipes.h"
+#import "ContainerRecipeViewController.h"
 
-@interface AppDelegate ()
+@interface AppDelegate () <UISplitViewControllerDelegate>
 
 @end
 
 @implementation AppDelegate
 
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+{
     // Override point for customization after application launch.
+    
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    UISplitViewController *splitViewController = [[UISplitViewController alloc] init];
+    splitViewController.delegate = self;
+    
+    RecipeTableViewController *master = [[RecipeTableViewController alloc] init];
+    // Put some data into the table view controller
+    TheRecipes *recipes = [[TheRecipes alloc] init];
+    master.recipes = [recipes arrayOfRecipes];
+    
+    UINavigationController *masterNav = [[UINavigationController alloc] initWithRootViewController:master];
+    
+    UIViewController *detailViewController = [[UIViewController alloc] init];
+    detailViewController.view.backgroundColor = [UIColor whiteColor];
+    UILabel *label = [[UILabel alloc] init];
+    label.text = @"Choose a recipe from the menu.";
+    label.translatesAutoresizingMaskIntoConstraints = NO;
+    [detailViewController.view addSubview:label];
+    
+    [detailViewController.view addConstraint:[NSLayoutConstraint constraintWithItem:label
+                                                                          attribute:NSLayoutAttributeCenterX
+                                                                          relatedBy:NSLayoutRelationEqual
+                                                                             toItem:detailViewController.view
+                                                                          attribute:NSLayoutAttributeCenterX
+                                                                         multiplier:1.0f
+                                                                           constant:0.0f]];
+    [detailViewController.view addConstraint:[NSLayoutConstraint constraintWithItem:label
+                                                                          attribute:NSLayoutAttributeCenterY
+                                                                          relatedBy:NSLayoutRelationEqual
+                                                                             toItem:detailViewController.view
+                                                                          attribute:NSLayoutAttributeCenterY
+                                                                         multiplier:1.0f
+                                                                           constant:0.0f]];
+    
+    
+    splitViewController.viewControllers = @[masterNav, detailViewController];
+    splitViewController.preferredDisplayMode = UISplitViewControllerDisplayModeAllVisible;
+    
+    TraitOverrideViewController *traitOverride = [[TraitOverrideViewController alloc] init];
+    traitOverride.viewController = splitViewController;
+    self.window.rootViewController = traitOverride;
+    
+    [self.window makeKeyAndVisible];
+    
     return YES;
 }
+
+- (BOOL)splitViewController:(UISplitViewController *)splitViewController collapseSecondaryViewController:(UIViewController *)secondaryViewController ontoPrimaryViewController:(UIViewController *)primaryViewController
+{
+    // Don't collapse
+    return NO;
+}
+
 
 - (void)applicationWillResignActive:(UIApplication *)application {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
