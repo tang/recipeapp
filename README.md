@@ -11,7 +11,7 @@ This is a basic app that was written over the course of a weekend.
 - Uses UISplitViewController in the iPhone and iPad versions
 - Adaptive: Uses the new UITraitCollection class to layout its views
 - Clicking on a direction table view cell starts a countdown timer
-- The views laid out programmatically using NSLayoutConstraints
+- The views are laid out programmatically using NSLayoutConstraints
 
 ### Sample images
 
