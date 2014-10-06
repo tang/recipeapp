@@ -13,6 +13,9 @@ This is a basic app that was written over the course of a weekend.
 - Clicking on a direction table view cell starts a countdown timer
 - The views are laid out programmatically using NSLayoutConstraints
 
+### To Do
+- Let the User take an image of the final product and save it using Core Data
+
 ### Sample images
 
 ![Screenshot](http://i.imgur.com/B2aexBc.png)
