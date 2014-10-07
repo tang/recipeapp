@@ -15,6 +15,8 @@ This is a basic app that was written over the course of a weekend.
 
 ### To Do
 - Let the User take an image of the final product and save it using Core Data
+- Let user create their own recipe
+- Let user edit the recipe in the Table View
 
 ### Sample images
 
