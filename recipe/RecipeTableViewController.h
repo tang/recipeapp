@@ -12,5 +12,6 @@
 @interface RecipeTableViewController : UITableViewController
 
 @property (nonatomic, strong) NSArray *recipes;
+@property (nonatomic, strong) NSManagedObjectContext *managedObjectContect;
 
 @end

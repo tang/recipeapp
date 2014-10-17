@@ -1,5 +1,5 @@
 //
-//  ContainerRecipeViewController.m
+//  DisplayRecipeViewController.m
 //  recipe
 //
 //  Created by Matt Tang on 10/4/14.
@@ -11,29 +11,35 @@
  Lists the parts of the current recipe
  */
 
-#import "ContainerRecipeViewController.h"
+#import "DisplayRecipeViewController.h"
 #import "ContainerControlView.h"
 #import "RecTableViewCell.h"
+#import "Recipe.h"
+#import "Step.h"
+#import "FetchedResultsControllerDataSource.h"
 
-@interface ContainerRecipeViewController () <UITableViewDataSource, UITableViewDelegate>
+@interface DisplayRecipeViewController () <UITableViewDelegate, FetchedResultsControllerDataSourceDelegate>
+
 @property (nonatomic, strong) UITableView *tableView;
 @property (nonatomic, strong) ContainerControlView *infoV;
 @property (nonatomic, strong) NSArray *verticalConstraints;
+@property (nonatomic, strong) FetchedResultsControllerDataSource *fetchedResultsControllerDataSource;
 
 @end
 
-@implementation ContainerRecipeViewController {
+@implementation DisplayRecipeViewController {
     NSInteger _remainingTimeInSeconds;
     NSTimer *_countDownTimer;
 }
 
 static NSString *CellIdentifier = @"Cell";
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    self.navigationItem.title = self.recipe[@"name"];
+    self.navigationItem.title = self.theRecipe.name;
     
     _infoV = [[ContainerControlView alloc] init];
     _infoV.translatesAutoresizingMaskIntoConstraints = NO;
@@ -41,10 +47,11 @@ static NSString *CellIdentifier = @"Cell";
     
     _tableView = [[UITableView alloc] init];
     _tableView.delegate = self;
-    _tableView.dataSource = self;
     _tableView.translatesAutoresizingMaskIntoConstraints = NO;
     [_tableView registerClass:[RecTableViewCell class] forCellReuseIdentifier:CellIdentifier];
     [self.view addSubview:_tableView];
+    
+    [self setUpDataSource];
     
     // Use visual constaint to lay out the views
     NSDictionary *views = NSDictionaryOfVariableBindings(_infoV, _tableView);
@@ -112,35 +119,31 @@ static NSString *CellIdentifier = @"Cell";
     }
 }
 
-#pragma mark - Gets string representation of JSON data
+- (void)setUpDataSource
+{
+    self.fetchedResultsControllerDataSource = [[FetchedResultsControllerDataSource alloc] initWithTable:self.tableView];
+    self.fetchedResultsControllerDataSource.delegate = self;
+    self.fetchedResultsControllerDataSource.cellIdentifier = CellIdentifier;
+    
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Recipe"];
+    request.predicate = [NSPredicate predicateWithFormat:@"self == %@", self.theRecipe];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]];
+    
+    NSFetchedResultsController *fetchedResultsController = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:self.managedObjectContext sectionNameKeyPath:nil cacheName:nil];
+    
+    self.fetchedResultsControllerDataSource.fetchedResultsController = fetchedResultsController;
 
-- (NSString *)stringForRow:(NSInteger)row
+}
+
+- (NSString *)textForRow:(NSInteger)row withRecipe:(Recipe *)recipe
 {
     if (row == 0) {
-        return [self stringFromIngredients:self.recipe[@"ingredients"]];
+        return [recipe stringOfIngredients];
     } else if (row == 1) {
-        return [self.recipe[@"items"] componentsJoinedByString:@"\n"];
+        return [recipe stringOfItems];
     }
     
-    return [self stringFromDirection:self.recipe[@"directions"][row-2]];
-}
-
-- (NSString *)stringFromIngredients:(NSArray *)ingredients
-{
-    NSMutableArray *temp = [NSMutableArray array];
-    
-    for (NSDictionary *dict in ingredients) {
-        [temp addObject:[NSString stringWithFormat:@"%@ - %@", dict[@"name"], dict[@"amount"]]];
-    }
-    
-    return [temp componentsJoinedByString:@"\n"];
-}
-
-- (NSString *)stringFromDirection:(NSDictionary *)direction
-{
-    NSString *time = direction[@"time-in-minutes"] ? direction[@"time-in-minutes"] : @"0";
-    
-    return [NSString stringWithFormat:@"Time (min): %@\n%@", time, direction[@"instruction"]];
+    return [recipe stringOfStepForRow:row];
 }
 
 - (NSString *)titleForRow:(NSInteger)row
@@ -156,52 +159,44 @@ static NSString *CellIdentifier = @"Cell";
     }
 }
 
+#pragma mark - FetchedResulsControllerDataSource delegate
+
+- (void)configureCell:(id)cell withObject:(id)object forIndexPath:(NSIndexPath *)indexPath
+{
+    Recipe *recipe = (Recipe *)object;
+    self.theRecipe = recipe;
+    
+    ((RecTableViewCell *)cell).mainLabel.text = [self textForRow:indexPath.row withRecipe:self.theRecipe];
+    ((RecTableViewCell *)cell).titleLabel.text = [self titleForRow:indexPath.row];
+    ((RecTableViewCell *)cell).time = [self.theRecipe timeOfStepAtRow:indexPath.row];
+}
+
 #pragma mark - Table view data source
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
-{
-    return 1;
-}
+//- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+//{
+//    RecTableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
+//    
+//    if (!cell) {
+//        cell = [[RecTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+//    }
+//    
+//    cell.mainLabel.text = [self stringForRow:indexPath.row];
+//    
+//    cell.titleLabel.text = [self titleForRow:indexPath.row];
+//    
+//    cell.time = [self timeForRow:indexPath.row];
+//    
+//    return cell;
+//}
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    int directionsCount = (int)[self.recipe[@"directions"] count];
-    
-    if (!self.recipe[@"directions"]) {
-        return 0;
-    }
-    
-    // 2 accounts for the Ingredients and Items rows
-    return directionsCount + 2;
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    RecTableViewCell *cell = [self.tableView dequeueReusableCellWithIdentifier:CellIdentifier forIndexPath:indexPath];
-    
-    if (!cell) {
-        cell = [[RecTableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-    }
-    
-    cell.mainLabel.text = [self stringForRow:indexPath.row];
-    
-    cell.titleLabel.text = [self titleForRow:indexPath.row];
-    
-    cell.time = [self timeForRow:indexPath.row];
-    
-    return cell;
-}
+#pragma mark - Table view delegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    // Use default height if there are no directions
-    if (!self.recipe[@"directions"]) {
-        return 44.0f;
-    }
-    
     RecTableViewCell *cell = [[RecTableViewCell alloc] init];
     
-    cell.mainLabel.text = [self stringForRow:indexPath.row];
+    cell.mainLabel.text = [self textForRow:indexPath.row withRecipe:self.theRecipe];
     cell.titleLabel.text = [self titleForRow:indexPath.row];
 
     [cell setNeedsLayout];
@@ -213,11 +208,14 @@ static NSString *CellIdentifier = @"Cell";
     return height += 4.0f;
 }
 
-#pragma mark - Table view delegate
-
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
     [self clearTimer];
+    
+    // Don't set the timer for the Ingredients or Items rows
+    if (indexPath.row <= 1) {
+        return;
+    }
     
     RecTableViewCell *cell = (RecTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
     
@@ -230,20 +228,7 @@ static NSString *CellIdentifier = @"Cell";
     
 }
 
-#pragma Timer methods
-
-- (NSNumber *)timeForRow:(NSInteger)row
-{
-    if (row > 1) {
-        NSDictionary *direction = self.recipe[@"directions"][row-2];
-        
-        NSString *time = direction[@"time-in-minutes"] ? direction[@"time-in-minutes"] : @"0";
-        
-        return [NSNumber numberWithInteger:[time integerValue]];
-    }
-    
-    return @0;
-}
+#pragma mark - Timer methods
 
 - (void)updateTimer
 {

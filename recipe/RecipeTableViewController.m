@@ -7,9 +7,12 @@
 //
 
 #import "RecipeTableViewController.h"
-#import "ContainerRecipeViewController.h"
-@interface RecipeTableViewController () <UITableViewDelegate>
+#import "DisplayRecipeViewController.h"
+#import "FetchedResultsControllerDataSource.h"
+#import "Recipe.h"
 
+@interface RecipeTableViewController () <FetchedResultsControllerDataSourceDelegate>
+@property (nonatomic, strong) FetchedResultsControllerDataSource *fetchedResultsControllerDataSource;
 @end
 
 @implementation RecipeTableViewController
@@ -21,6 +24,8 @@ static NSString *CellIdentifier = @"RecipeTableViewCell";
 
     self.title = @"Recipes";
     [self.tableView registerClass:[UITableViewCell class] forCellReuseIdentifier:CellIdentifier];
+    
+    [self setUpDataSource];
     
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
@@ -45,34 +50,37 @@ static NSString *CellIdentifier = @"RecipeTableViewCell";
     }
 }
 
-#pragma mark - Table view data source
+- (void)setUpDataSource
+{
+    self.fetchedResultsControllerDataSource = [[FetchedResultsControllerDataSource alloc] initWithTable:self.tableView];
+    self.fetchedResultsControllerDataSource.cellIdentifier = CellIdentifier;
+    self.fetchedResultsControllerDataSource.delegate = self;
+    
+    NSFetchRequest *request = [NSFetchRequest fetchRequestWithEntityName:@"Recipe"];
+    request.sortDescriptors = @[[NSSortDescriptor sortDescriptorWithKey:@"name" ascending:YES]];
+    NSFetchedResultsController *fetchedResults = [[NSFetchedResultsController alloc] initWithFetchRequest:request managedObjectContext:self.managedObjectContect sectionNameKeyPath:nil cacheName:nil];
+        
+    self.fetchedResultsControllerDataSource.fetchedResultsController = fetchedResults;
 
-- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
-    // Return the number of sections.
-    return 1;
 }
 
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
-    // Return the number of rows in the section.
-    return self.recipes.count;
-}
+#pragma mark - FetchedResultsControllerDataSource delegate
 
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"RecipeTableViewCell" forIndexPath:indexPath];
-    
-    NSDictionary *recipe = self.recipes[indexPath.row];
-    
-    cell.textLabel.text = recipe[@"name"];
-    
-    return cell;
+- (void)configureCell:(id)cell withObject:(id)object forIndexPath:(NSIndexPath *)indexPath
+{
+    Recipe *recipe = (Recipe *)object;
+//    UITableViewCell *theCell = cell;
+//    theCell.textLabel.text = recipe.name;
+    ((UITableViewCell *)cell).textLabel.text = recipe.name;
 }
 
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    ContainerRecipeViewController *controller = [[ContainerRecipeViewController alloc] init];
-    controller.recipe = self.recipes[indexPath.row];
+    DisplayRecipeViewController *controller = [[DisplayRecipeViewController alloc] init];
+    controller.theRecipe = [self.fetchedResultsControllerDataSource selectedItem];
+    controller.managedObjectContext = self.managedObjectContect;
     [self showDetailViewController:controller sender:self];
 }
 

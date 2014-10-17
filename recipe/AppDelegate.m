@@ -10,7 +10,11 @@
 #import "TraitOverrideViewController.h"
 #import "RecipeTableViewController.h"
 #import "TheRecipes.h"
-#import "ContainerRecipeViewController.h"
+#import "DisplayRecipeViewController.h"
+#import "Recipe.h"
+#import "Item.h"
+#import "Step.h"
+#import "ExampleRecipes.h"
 
 @interface AppDelegate () <UISplitViewControllerDelegate>
 
@@ -23,11 +27,44 @@
 {
     // Override point for customization after application launch.
     
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
+    if (![defaults objectForKey:@"firstTimeRun"]) {
+        [defaults setObject:[NSDate date] forKey:@"firstTimeRun"];
+        [defaults synchronize];
+
+        // Add some example recipes
+        ExampleRecipes *exampleRecipes = [[ExampleRecipes alloc] init];
+        exampleRecipes.managedObjectContext = self.managedObjectContext;
+        [exampleRecipes addScrambledEggsRecipe];
+    }
+    
+    // Check if the DB contains recipes
+//    NSFetchRequest *fetchRequest = [[NSFetchRequest alloc] init];
+//    NSEntityDescription *entity = [NSEntityDescription entityForName:@"Recipe"
+//                                              inManagedObjectContext:self.managedObjectContext];
+//    [fetchRequest setEntity:entity];
+//    NSError *error;
+//    NSArray *fetchedObjects = [self.managedObjectContext executeFetchRequest:fetchRequest error:&error];
+//    for (Recipe *recipe in fetchedObjects) {
+//        NSLog(@"recipe name: %@", recipe.name);
+//        
+//        for (Item *item in recipe.items) {
+//            NSLog(@"item: %@", item.name);
+//        }
+//        
+//        for (Step *step in recipe.steps) {
+//            NSLog(@"step: %@", step.desc);
+//        }
+//    }
+    
+    
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     UISplitViewController *splitViewController = [[UISplitViewController alloc] init];
     splitViewController.delegate = self;
     
     RecipeTableViewController *master = [[RecipeTableViewController alloc] init];
+    master.managedObjectContect = self.managedObjectContext;
     // Put some data into the table view controller
     TheRecipes *recipes = [[TheRecipes alloc] init];
     master.recipes = [recipes arrayOfRecipes];
@@ -116,7 +153,7 @@
     if (_managedObjectModel != nil) {
         return _managedObjectModel;
     }
-    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"recipe" withExtension:@"momd"];
+    NSURL *modelURL = [[NSBundle mainBundle] URLForResource:@"Model" withExtension:@"momd"];
     _managedObjectModel = [[NSManagedObjectModel alloc] initWithContentsOfURL:modelURL];
     return _managedObjectModel;
 }
