@@ -38,7 +38,7 @@
 
     // Use cell identifier to figure out which Controller is currently the delegate of this Data Source
     // Needs to return rows for all the steps + 1 row for all Ingredients + 1 row for all Items
-    if ([self.cellIdentifier isEqualToString:@"Cell"]) {
+    if ([self.cellIdentifier isEqualToString:@"RecTableViewCell"]) {
         Recipe *recipe = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
         return [recipe total];
     }
@@ -52,7 +52,7 @@
     
     // Identifier for DisplayRecipeViewController
     // Return the Recipe object every time
-    if ([self.cellIdentifier isEqualToString:@"Cell"]) {
+    if ([self.cellIdentifier isEqualToString:@"RecTableViewCell"]) {
         object = [self.fetchedResultsController objectAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
     } else {
         object = [self.fetchedResultsController objectAtIndexPath:indexPath];

@@ -32,7 +32,7 @@
     NSTimer *_countDownTimer;
 }
 
-static NSString *CellIdentifier = @"Cell";
+static NSString *CellIdentifier = @"RecTableViewCell";
 
 - (void)viewDidLoad
 {
@@ -212,12 +212,17 @@ static NSString *CellIdentifier = @"Cell";
 {
     [self clearTimer];
     
-    // Don't set the timer for the Ingredients or Items rows
+    // Don't run the timer for the Ingredients or Items rows
     if (indexPath.row <= 1) {
         return;
     }
     
     RecTableViewCell *cell = (RecTableViewCell *)[self.tableView cellForRowAtIndexPath:indexPath];
+    
+    // Don't run the timer if the Time is 0
+    if ([cell.time intValue] == 0) {
+        return;
+    }
     
     // Set initial time to label in the infoV view
     _infoV.label.text = [NSString stringWithFormat:@"%02d:00", [cell.time intValue]];
