@@ -3,6 +3,10 @@ recipeapp
 
 Code sample
 
+### Update - coredata branch
+- Recipes are now retrieved with Core Data
+- Both Table view controllers use a single NSFetchedResultsController subclass as its table view's data source
+
 ### Summary
 This is a basic app that was written over the course of a weekend.
 
